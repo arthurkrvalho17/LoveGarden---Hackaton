@@ -1,0 +1,13 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties]"
+  application:
+    name: LoveGarden
+  mongodb:
+    uri: "${MONGODB_URI}"
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+
+cors:
+  allowed-origins: "${CORS_ORIGINS}"
