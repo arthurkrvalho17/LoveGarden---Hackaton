@@ -1,0 +1,256 @@
+<!-- Container principal -->
+<div class="garden-container"
+     (mousemove)="onContainerMouseMove($event)"
+     (touchmove)="onContainerTouchMove($event)"
+     (click)="closePicker()">
+
+  <!-- Fundo -->
+  <div class="sky"></div>
+  <div class="cloud cloud-1"></div>
+  <div class="cloud cloud-2"></div>
+  <div class="cloud cloud-3"></div>
+  <div class="ground-back"></div>
+  <div class="ground-mid"></div>
+  <div class="dirt-path"></div>
+  <div class="ground-front"></div>
+
+  <!-- Flores plantadas -->
+  <div class="flowers-layer">
+    <div *ngFor="let f of flowers"
+         class="planted-flower"
+         [style.left.%]="f.x"
+         [style.top.%]="f.y"
+         [style.z-index]="f.y | number:'1.0-0'"
+         (click)="openFlower(f); $event.stopPropagation()">
+      <img [src]="FLOWERS[f.type].img"
+           [style.width.px]="flowerSize(f.y)"
+           [alt]="FLOWERS[f.type].name">
+    </div>
+  </div>
+
+  <!-- Ghost do drag -->
+  <div class="drag-ghost" *ngIf="dragging && dragType"
+       [style.left.px]="ghostX" [style.top.px]="ghostY">
+    <img [src]="FLOWERS[dragType].img" alt="">
+  </div>
+
+  <!-- Dica de soltar -->
+  <div class="drop-hint" *ngIf="dragging">
+    <span>🌸 Solte aqui para plantar</span>
+  </div>
+
+  <!-- Dica: jardim vazio -->
+  <div class="empty-hint" *ngIf="!isReadOnly && flowers.length === 0 && !dragging">
+    <span>🌱 Abra o botão de flores e arraste uma para o jardim com uma mensagem especial</span>
+  </div>
+
+  <!-- Dica: modo visualização -->
+  <div class="readonly-hint" *ngIf="isReadOnly && flowers.length > 0">
+    <span>💌 Toque nas flores para ver as mensagens deixadas para você</span>
+  </div>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <button class="back-btn" (click)="goBack(); $event.stopPropagation()">←</button>
+    <input *ngIf="!isReadOnly"
+           class="garden-title-input"
+           [(ngModel)]="gardenNome"
+           maxlength="40"
+           placeholder="Nome do jardim"
+           (click)="$event.stopPropagation()">
+    <span *ngIf="isReadOnly" class="garden-title">{{ gardenNome }}</span>
+    <div class="top-actions">
+      <div class="flowers-count">
+        {{ flowers.length === 0 ? 'Nenhuma flor' : flowers.length === 1 ? '1 flor' : flowers.length + ' flores' }}
+      </div>
+      <!-- Botão salvar (só no modo edição, não no readonly) -->
+      <button class="save-btn"
+              *ngIf="!isReadOnly"
+              (click)="saveGarden(); $event.stopPropagation()"
+              [disabled]="saving">
+        <span *ngIf="!saving && !saved">💾 Salvar</span>
+        <span *ngIf="saving">Salvando...</span>
+        <span *ngIf="saved">✓ Salvo!</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Picker (escondido no modo readonly) -->
+  <div class="flower-picker" *ngIf="!isReadOnly" (click)="stopProp($event)">
+    <div class="flower-options" [class.open]="pickerOpen">
+
+      <div class="flower-option"
+           (mousedown)="onMouseDown($event, 'rosa')"
+           (touchstart)="onTouchStart($event, 'rosa')">
+        <img [src]="FLOWERS.rosa.img" alt="Rosa">
+        <span>Rosa</span>
+      </div>
+
+      <div class="flower-option"
+           (mousedown)="onMouseDown($event, 'girassol')"
+           (touchstart)="onTouchStart($event, 'girassol')">
+        <img [src]="FLOWERS.girassol.img" alt="Girassol">
+        <span>Girassol</span>
+      </div>
+
+      <div class="flower-option"
+           (mousedown)="onMouseDown($event, 'tulipa')"
+           (touchstart)="onTouchStart($event, 'tulipa')">
+        <img [src]="FLOWERS.tulipa.img" alt="Tulipa">
+        <span>Tulipa</span>
+      </div>
+
+    </div>
+
+    <button class="picker-btn" [class.open]="pickerOpen" (click)="togglePicker($event)">
+      <svg viewBox="0 0 24 24" fill="white">
+        <path d="M12 2C9.5 2 8 4 8 6.5C6 5 3.5 5.5 2.5 7.5C1.5 9.5 2.5 12 4.5 13C3 14.5 3 17 5 18C5.5 19.5 7 20.5 8.5 20.5C9 21.5 10 22 11 22H13C14 22 15 21.5 15.5 20.5C17 20.5 18.5 19.5 19 18C21 17 21 14.5 19.5 13C21.5 12 22.5 9.5 21.5 7.5C20.5 5.5 18 5 16 6.5C16 4 14.5 2 12 2Z"/>
+      </svg>
+    </button>
+    <span class="picker-label">Plantar flor</span>
+  </div>
+
+</div>
+
+
+<!-- ══ MODAL: PLANTAR ══ -->
+<div class="modal-overlay" [class.open]="modalOpen">
+  <div class="modal" (click)="stopProp($event)">
+    <div class="modal-handle"></div>
+
+    <div class="modal-flower-preview" *ngIf="pendingType">
+      <img [src]="FLOWERS[pendingType].img" alt="">
+      <div>
+        <h3>{{ FLOWERS[pendingType].name }}</h3>
+        <p>Adicione uma memória especial ✿</p>
+      </div>
+    </div>
+
+    <label>Título da memória</label>
+    <input type="text" [(ngModel)]="memTitle"
+           placeholder="Ex: Para a minha mãe com amor..." maxlength="60">
+
+    <label>Mensagem</label>
+    <textarea [(ngModel)]="memMsg"
+              placeholder="Escreva uma mensagem carinhosa..." maxlength="280"></textarea>
+
+    <label>Foto (opcional)</label>
+    <div class="photo-upload-area">
+      <input type="file" accept="image/*" (change)="onPhotoSelected($event)">
+      <img *ngIf="photoURL" class="photo-preview" [src]="photoURL" alt="">
+      <div *ngIf="!photoURL" class="photo-placeholder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="18" height="18" rx="4"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+        <span>Toque para adicionar foto</span>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelModal()">Cancelar</button>
+      <button class="btn-plant"  (click)="confirmPlant()">🌸 Plantar!</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL: VER / EDITAR FLOR ══ -->
+<div class="view-overlay" [class.open]="!!viewing" (click)="closeViewing()">
+  <div class="view-card" *ngIf="viewing" (click)="stopProp($event)">
+
+    <!-- Cabeçalho com ações -->
+    <div class="view-card-header">
+      <img [src]="FLOWERS[viewing.type].img" alt="">
+      <h3>{{ FLOWERS[viewing.type].name }}</h3>
+
+      <div class="view-card-actions" *ngIf="!isReadOnly">
+        <!-- Editar -->
+        <button class="action-btn edit-btn"
+                [class.active]="editMode"
+                (click)="toggleEditMode()"
+                title="Editar">
+          ✏️
+        </button>
+        <!-- Remover (pá) -->
+        <button class="action-btn remove-btn"
+                (click)="removeFlower()"
+                title="Retirar flor">
+          🪣
+        </button>
+      </div>
+    </div>
+
+    <!-- MODO VISUALIZAÇÃO -->
+    <ng-container *ngIf="!editMode">
+      <img *ngIf="viewing.imageURL" class="view-card-img" [src]="viewing.imageURL" alt="">
+      <div class="view-card-body">
+        <div class="mem-title">{{ viewing.titulo }}</div>
+        <div class="mem-msg">{{ viewing.mensagem }}</div>
+      </div>
+    </ng-container>
+
+    <!-- MODO EDIÇÃO -->
+    <div class="edit-body" *ngIf="editMode">
+      <label>Título</label>
+      <input type="text" [(ngModel)]="editTitle" maxlength="60"
+             placeholder="Título da memória">
+
+      <label>Mensagem</label>
+      <textarea [(ngModel)]="editMsg" maxlength="280"
+                placeholder="Mensagem..."></textarea>
+
+      <label>Foto</label>
+      <div class="photo-upload-area">
+        <input type="file" accept="image/*" (change)="onEditPhotoSelected($event)">
+        <img *ngIf="editPhotoURL" class="photo-preview" [src]="editPhotoURL" alt="">
+        <div *ngIf="!editPhotoURL" class="photo-placeholder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="4"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Trocar foto</span>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 16px;">
+        <button class="btn-cancel" (click)="toggleEditMode()">Cancelar</button>
+        <button class="btn-plant"  (click)="saveEdit()">💾 Salvar</button>
+      </div>
+    </div>
+
+    <button class="view-card-close" *ngIf="!editMode" (click)="closeViewing()">
+      Fechar ✿
+    </button>
+
+  </div>
+</div>
+
+
+<!-- ══ TOAST ══ -->
+<div class="toast"
+     *ngIf="toast"
+     [class.toast-error]="toast.type === 'error'"
+     [class.toast-success]="toast.type === 'success'">
+  {{ toast.msg }}
+</div>
+
+<!-- ══ MODAL: COMPARTILHAR LINK ══ -->
+<div class="view-overlay" [class.open]="showShareModal" (click)="closeShareModal()">
+  <div class="share-card" (click)="stopProp($event)">
+    <div class="share-icon">🌸</div>
+    <h3>Jardim salvo!</h3>
+    <p>Compartilhe este link para que alguém possa ver o seu jardim:</p>
+
+    <div class="share-link-box">
+      <span>{{ shareLink }}</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="closeShareModal()">Fechar</button>
+      <button class="btn-plant" (click)="copyLink()">📋 Copiar link</button>
+    </div>
+  </div>
+</div>
