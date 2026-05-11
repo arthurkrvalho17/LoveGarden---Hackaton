@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/garden")
+@CrossOrigin(origins = "*")
 public class GardenController {
 
     private final GardenMapper mapper;
