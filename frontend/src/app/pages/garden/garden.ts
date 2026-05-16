@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -78,6 +78,7 @@ export class GardenComponent implements OnInit {
     private route: ActivatedRoute,
     private gardenService: GardenService,
     private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
   ) {}
 
   ngOnInit() {
@@ -98,7 +99,7 @@ export class GardenComponent implements OnInit {
   // ── CARREGAR JARDIM DO BANCO ──
   loadGarden(id: string) {
     this.gardenService.findById(id).subscribe({
-      next: g => {
+      next: g => this.ngZone.run(() => {
         this.gardenNome = g.nome || 'Meu Jardim';
         this.gardenId   = g.id ?? null;
         this.flowers    = (g.flowers ?? []).map((f: any, i: number) => ({
@@ -110,8 +111,7 @@ export class GardenComponent implements OnInit {
           mensagem: f.memory?.message ?? '',
           imageURL: f.memory?.imageUrl ?? null,
         }));
-        this.cdr.detectChanges();
-      },
+      }),
       error: () => this.showToast('Jardim não encontrado ou link inválido.', 'error')
     });
   }
@@ -134,19 +134,18 @@ export class GardenComponent implements OnInit {
       : this.gardenService.create(body);
 
     req.subscribe({
-      next: g => {
+      next: g => this.ngZone.run(() => {
         this.gardenId       = g.id ?? null;
         this.saving         = false;
         this.saved          = true;
         this.shareLink      = `${window.location.origin}${window.location.pathname}#/garden/${g.id}`;
         this.showShareModal = true;
-        this.cdr.detectChanges();
         setTimeout(() => this.saved = false, 3000);
-      },
-      error: () => {
+      }),
+      error: () => this.ngZone.run(() => {
         this.saving = false;
         this.showToast('Erro ao salvar o jardim. Tente novamente.', 'error');
-      }
+      })
     });
   }
 
@@ -279,7 +278,7 @@ export class GardenComponent implements OnInit {
       return;
     }
     const reader = new FileReader();
-    reader.onload = ev => { this.photoURL = ev.target?.result as string; };
+    reader.onload = ev => this.ngZone.run(() => { this.photoURL = ev.target?.result as string; });
     reader.readAsDataURL(file);
   }
 
@@ -311,7 +310,7 @@ export class GardenComponent implements OnInit {
       return;
     }
     const reader = new FileReader();
-    reader.onload = ev => { this.editPhotoURL = ev.target?.result as string; };
+    reader.onload = ev => this.ngZone.run(() => { this.editPhotoURL = ev.target?.result as string; });
     reader.readAsDataURL(file);
   }
 
