@@ -1,11 +1,22 @@
 <!-- Container principal -->
 <div class="garden-container"
+     [class.night]="isNight"
      (mousemove)="onContainerMouseMove($event)"
      (touchmove)="onContainerTouchMove($event)"
      (click)="closePicker()">
 
   <!-- Fundo -->
   <div class="sky"></div>
+  <div class="moon" [class.visible]="isNight"></div>
+  <div class="stars-layer" [class.visible]="isNight">
+    <div *ngFor="let s of stars" class="star"
+         [style.left.%]="s.x"
+         [style.top.%]="s.y"
+         [style.width.px]="s.size"
+         [style.height.px]="s.size"
+         [style.animation-delay.s]="s.delay">
+    </div>
+  </div>
   <div class="cloud cloud-1"></div>
   <div class="cloud cloud-2"></div>
   <div class="cloud cloud-3"></div>
@@ -63,6 +74,13 @@
       <div class="flowers-count">
         {{ flowers.length === 0 ? 'Nenhuma flor' : flowers.length === 1 ? '1 flor' : flowers.length + ' flores' }}
       </div>
+      <!-- Botão modo noite -->
+      <button class="night-btn"
+              *ngIf="!isReadOnly"
+              (click)="toggleNight(); $event.stopPropagation()"
+              [title]="isNight ? 'Modo dia' : 'Modo noite'">
+        {{ isNight ? '☀️' : '🌙' }}
+      </button>
       <!-- Botão salvar (só no modo edição, não no readonly) -->
       <button class="save-btn"
               *ngIf="!isReadOnly"

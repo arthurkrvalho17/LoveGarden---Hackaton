@@ -41,12 +41,20 @@ export class GardenComponent implements OnInit {
   gardenId: string | null = null;
   gardenNome = 'Meu Jardim';
   flowers: PlantedFlower[] = [];
-  isReadOnly = false; // true quando acessado via link compartilhado
+  isReadOnly = false;
+  isNight = false;
   saving = false;
   saved = false;
   shareLink = '';
   showShareModal = false;
   toast: { msg: string; type: 'error' | 'success' } | null = null;
+
+  stars: { x: number; y: number; size: number; delay: number }[] = Array.from({ length: 40 }, () => ({
+    x: Math.random() * 100,
+    y: Math.random() * 42,
+    size: 1 + Math.random() * 2.5,
+    delay: Math.random() * 4,
+  }));
 
   // ── picker ──
   pickerOpen = false;
@@ -102,6 +110,7 @@ export class GardenComponent implements OnInit {
       next: g => this.ngZone.run(() => {
         this.gardenNome = g.nome || 'Meu Jardim';
         this.gardenId   = g.id ?? null;
+        this.isNight    = g.theme?.sky === 'night';
         this.flowers    = (g.flowers ?? []).map((f: any, i: number) => ({
           id:       i,
           type:     f.type as 'rosa' | 'girassol' | 'tulipa',
@@ -127,7 +136,11 @@ export class GardenComponent implements OnInit {
       memory: { title: f.titulo, message: f.mensagem, imageUrl: f.imageURL, audioUrl: null },
     }));
 
-    const body = { nome: this.gardenNome, theme: null, flowers: backendFlowers };
+    const body = {
+      nome: this.gardenNome,
+      theme: { sky: this.isNight ? 'night' : 'day', music: null, weatherEffect: null },
+      flowers: backendFlowers,
+    };
 
     const req = this.gardenId
       ? this.gardenService.update(this.gardenId, body)
@@ -159,6 +172,8 @@ export class GardenComponent implements OnInit {
   }
 
   closeShareModal() { this.showShareModal = false; }
+
+  toggleNight() { this.isNight = !this.isNight; }
 
   // ── PICKER ──
   togglePicker(e: Event) {
