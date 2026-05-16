@@ -10,4 +10,4 @@ spring:
       fail-on-unknown-properties: true
 
 cors:
-  allowed-origins: "${CORS_ORIGINS}"
+  allowed-origins: "${CORS_ORIGINS:https://arthurkrvalho17.github.io}"
