@@ -2,8 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { GardenService } from '../../core/services/garden';
 
 // ── TIPOS ──
 export interface PlantedFlower {
@@ -16,13 +15,6 @@ export interface PlantedFlower {
   imageURL: string | null;
 }
 
-export interface Garden {
-  _id?: string;
-  nome: string;
-  flores: PlantedFlower[];
-  criadoEm?: string;
-}
-
 // ── IMAGENS SVG ──
 const ROSA     = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 90"><rect x="27" y="50" width="6" height="40" rx="3" fill="#2d7a3a"/><ellipse cx="30" cy="32" rx="22" ry="28" fill="#b01250"/><ellipse cx="30" cy="32" rx="18" ry="24" fill="#c8185e"/><ellipse cx="20" cy="28" rx="10" ry="14" fill="#d4206a" opacity="0.8"/><ellipse cx="40" cy="28" rx="10" ry="14" fill="#d4206a" opacity="0.8"/><ellipse cx="30" cy="20" rx="8" ry="10" fill="#a01048"/><ellipse cx="30" cy="22" rx="6" ry="8" fill="#e02878"/></svg>')}`;
 const GIRASSOL = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 90"><rect x="27" y="36" width="6" height="54" rx="3" fill="#2d7a3a"/><ellipse cx="30" cy="8" rx="5" ry="11" fill="#fbbf24"/><ellipse cx="42.7" cy="11.3" rx="5" ry="11" fill="#fbbf24" transform="rotate(45 42.7 11.3)"/><ellipse cx="48" cy="26" rx="5" ry="11" fill="#fbbf24" transform="rotate(90 48 26)"/><ellipse cx="42.7" cy="40.7" rx="5" ry="11" fill="#fbbf24" transform="rotate(135 42.7 40.7)"/><ellipse cx="30" cy="44" rx="5" ry="11" fill="#fbbf24" transform="rotate(180 30 44)"/><ellipse cx="17.3" cy="40.7" rx="5" ry="11" fill="#fbbf24" transform="rotate(225 17.3 40.7)"/><ellipse cx="12" cy="26" rx="5" ry="11" fill="#fbbf24" transform="rotate(270 12 26)"/><ellipse cx="17.3" cy="11.3" rx="5" ry="11" fill="#fbbf24" transform="rotate(315 17.3 11.3)"/><circle cx="30" cy="26" r="12" fill="#78350f"/><circle cx="30" cy="26" r="9" fill="#92400e"/></svg>')}`;
@@ -33,8 +25,6 @@ export const FLOWERS: { [key in 'rosa' | 'girassol' | 'tulipa']: { name: string;
   girassol: { name: 'Girassol', img: GIRASSOL },
   tulipa:   { name: 'Tulipa',   img: TULIPA },
 };
-
-const API = environment.apiUrl;
 
 @Component({
   selector: 'app-garden',
@@ -86,7 +76,7 @@ export class GardenComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private http: HttpClient,
+    private gardenService: GardenService,
   ) {}
 
   ngOnInit() {
@@ -106,8 +96,7 @@ export class GardenComponent implements OnInit {
 
   // ── CARREGAR JARDIM DO BANCO ──
   loadGarden(id: string) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.http.get<any>(`${API}/garden/${id}`).subscribe({
+    this.gardenService.findById(id).subscribe({
       next: g => {
         this.gardenNome = g.nome || 'Meu Jardim';
         this.gardenId   = g.id;
@@ -138,10 +127,9 @@ export class GardenComponent implements OnInit {
 
     const body = { nome: this.gardenNome, theme: null, flowers: backendFlowers };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const req = this.gardenId
-      ? this.http.put<any>(`${API}/garden/${this.gardenId}`, body)
-      : this.http.post<any>(`${API}/garden`, body);
+      ? this.gardenService.update(this.gardenId, body)
+      : this.gardenService.create(body);
 
     req.subscribe({
       next: g => {

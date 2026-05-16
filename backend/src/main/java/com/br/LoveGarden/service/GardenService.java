@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class GardenService {
@@ -39,6 +40,6 @@ public class GardenService {
 
     public Garden getJardim(String id) {
         return repository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Link inválido! Por favor insira um link válido"));
+                .orElseThrow(() -> new NoSuchElementException("Jardim não encontrado."));
     }
 }

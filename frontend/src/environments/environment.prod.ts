@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://sua-api.railway.app'
+  apiUrl: 'https://lovegarden-production-5c14.up.railway.app'
 };

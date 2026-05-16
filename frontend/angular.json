@@ -30,6 +30,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/LoveGarden/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
