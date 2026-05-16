@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -77,6 +77,7 @@ export class GardenComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private gardenService: GardenService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -109,6 +110,7 @@ export class GardenComponent implements OnInit {
           mensagem: f.memory?.message ?? '',
           imageURL: f.memory?.imageUrl ?? null,
         }));
+        this.cdr.detectChanges();
       },
       error: () => this.showToast('Jardim não encontrado ou link inválido.', 'error')
     });
@@ -138,6 +140,7 @@ export class GardenComponent implements OnInit {
         this.saved          = true;
         this.shareLink      = `${window.location.origin}${window.location.pathname}#/garden/${g.id}`;
         this.showShareModal = true;
+        this.cdr.detectChanges();
         setTimeout(() => this.saved = false, 3000);
       },
       error: () => {
