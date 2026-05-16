@@ -30,7 +30,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/LoveGarden/",
+              "baseHref": "/LoveGarden---Hackaton/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
