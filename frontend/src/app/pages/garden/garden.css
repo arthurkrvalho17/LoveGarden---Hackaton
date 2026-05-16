@@ -301,6 +301,22 @@
   to   { opacity: 0.95; transform: scale(1.3); }
 }
 
+/* Glow nas plantas noturnas */
+@keyframes nightGlow {
+  from { filter: drop-shadow(0 0 5px rgba(120, 180, 255, 0.7))
+                 drop-shadow(0 0 14px rgba(100, 150, 255, 0.35)); }
+  to   { filter: drop-shadow(0 0 12px rgba(160, 210, 255, 1))
+                 drop-shadow(0 0 28px rgba(130, 170, 255, 0.6)); }
+}
+.garden-container.night .planted-flower img {
+  animation: nightGlow 2.2s ease-in-out infinite alternate;
+}
+.garden-container.night .planted-flower:hover img {
+  animation: none;
+  filter: drop-shadow(0 0 16px rgba(180, 220, 255, 1))
+          drop-shadow(0 0 36px rgba(140, 190, 255, 0.75));
+}
+
 /* Night toggle button */
 .night-btn {
   width: 38px;
