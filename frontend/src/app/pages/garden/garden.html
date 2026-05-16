@@ -33,7 +33,7 @@
          [style.top.%]="f.y"
          [style.z-index]="f.y | number:'1.0-0'"
          (click)="openFlower(f); $event.stopPropagation()">
-      <img [src]="FLOWERS[f.type].img"
+      <img [src]="getFlowerImg(f.type)"
            [style.width.px]="flowerSize(f.y)"
            [alt]="FLOWERS[f.type].name">
     </div>
@@ -42,7 +42,7 @@
   <!-- Ghost do drag -->
   <div class="drag-ghost" *ngIf="dragging && dragType"
        [style.left.px]="ghostX" [style.top.px]="ghostY">
-    <img [src]="FLOWERS[dragType].img" alt="">
+    <img [src]="getFlowerImg(dragType)" alt="">
   </div>
 
   <!-- Dica de soltar -->
@@ -100,21 +100,21 @@
       <div class="flower-option"
            (mousedown)="onMouseDown($event, 'rosa')"
            (touchstart)="onTouchStart($event, 'rosa')">
-        <img [src]="FLOWERS.rosa.img" alt="Rosa">
+        <img [src]="getFlowerImg('rosa')" alt="Rosa">
         <span>Rosa</span>
       </div>
 
       <div class="flower-option"
            (mousedown)="onMouseDown($event, 'girassol')"
            (touchstart)="onTouchStart($event, 'girassol')">
-        <img [src]="FLOWERS.girassol.img" alt="Girassol">
+        <img [src]="getFlowerImg('girassol')" alt="Girassol">
         <span>Girassol</span>
       </div>
 
       <div class="flower-option"
            (mousedown)="onMouseDown($event, 'tulipa')"
            (touchstart)="onTouchStart($event, 'tulipa')">
-        <img [src]="FLOWERS.tulipa.img" alt="Tulipa">
+        <img [src]="getFlowerImg('tulipa')" alt="Tulipa">
         <span>Tulipa</span>
       </div>
 
@@ -137,7 +137,7 @@
     <div class="modal-handle"></div>
 
     <div class="modal-flower-preview" *ngIf="pendingType">
-      <img [src]="FLOWERS[pendingType].img" alt="">
+      <img [src]="getFlowerImg(pendingType)" alt="">
       <div>
         <h3>{{ FLOWERS[pendingType].name }}</h3>
         <p>Adicione uma memória especial ✿</p>
@@ -180,7 +180,7 @@
 
     <!-- Cabeçalho com ações -->
     <div class="view-card-header">
-      <img [src]="FLOWERS[viewing.type].img" alt="">
+      <img [src]="getFlowerImg(viewing.type)" alt="">
       <h3>{{ FLOWERS[viewing.type].name }}</h3>
 
       <div class="view-card-actions" *ngIf="!isReadOnly">
