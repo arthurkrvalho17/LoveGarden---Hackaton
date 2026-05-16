@@ -99,7 +99,7 @@ export class GardenComponent implements OnInit {
     this.gardenService.findById(id).subscribe({
       next: g => {
         this.gardenNome = g.nome || 'Meu Jardim';
-        this.gardenId   = g.id;
+        this.gardenId   = g.id ?? null;
         this.flowers    = (g.flowers ?? []).map((f: any, i: number) => ({
           id:       i,
           type:     f.type as 'rosa' | 'girassol' | 'tulipa',
@@ -133,7 +133,7 @@ export class GardenComponent implements OnInit {
 
     req.subscribe({
       next: g => {
-        this.gardenId       = g.id;
+        this.gardenId       = g.id ?? null;
         this.saving         = false;
         this.saved          = true;
         this.shareLink      = `${window.location.origin}${window.location.pathname}#/garden/${g.id}`;
