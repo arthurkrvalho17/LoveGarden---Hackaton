@@ -42,4 +42,6 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+# permitir apenas os assets de música comprimidos do projeto
 *.mp3
+!src/assets/musics/*.mp3
