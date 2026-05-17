@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -46,10 +46,16 @@ export const NIGHT_FLOWERS: { [key in 'rosa' | 'girassol' | 'tulipa']: { name: s
   templateUrl: './garden.html',
   styleUrls: ['./garden.css'],
 })
-export class GardenComponent implements OnInit {
+export class GardenComponent implements OnInit, OnDestroy {
 
   FLOWERS = FLOWERS;
   NIGHT_FLOWERS = NIGHT_FLOWERS;
+
+  // ── áudio ──
+  private readonly DAY_TRACK   = 'assets/musics/garden-day.mp3';
+  private readonly NIGHT_TRACK = 'assets/musics/garden-night.mp3';
+  private audio = new Audio();
+  musicMuted = false;
 
   // ── estado do jardim ──
   gardenId: string | null = null;
@@ -104,15 +110,43 @@ export class GardenComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Se a rota tem um ID (?id=xxx ou /garden/:id), carrega do banco
+    this.initAudio();
+
     const id = this.route.snapshot.paramMap.get('id')
             || this.route.snapshot.queryParamMap.get('id');
 
     if (id) {
       this.gardenId = id;
-      this.isReadOnly = true; // quem abre via link só visualiza
+      this.isReadOnly = true;
       this.loadGarden(id);
     }
+  }
+
+  ngOnDestroy() {
+    this.audio.pause();
+    this.audio.src = '';
+  }
+
+  private initAudio() {
+    this.audio.src = this.DAY_TRACK;
+    this.audio.loop = true;
+    this.audio.volume = 0.35;
+    this.audio.play().catch(() => {
+      document.addEventListener('click', () => this.audio.play().catch(() => {}), { once: true });
+    });
+  }
+
+  private switchTrack(src: string) {
+    const wasMuted = this.musicMuted;
+    this.audio.src = src;
+    this.audio.loop = true;
+    this.audio.volume = wasMuted ? 0 : 0.35;
+    this.audio.play().catch(() => {});
+  }
+
+  toggleMusic() {
+    this.musicMuted = !this.musicMuted;
+    this.audio.volume = this.musicMuted ? 0 : 0.35;
   }
 
   // ── NAVEGAÇÃO ──
@@ -125,6 +159,7 @@ export class GardenComponent implements OnInit {
         this.gardenNome = g.nome || 'Meu Jardim';
         this.gardenId   = g.id ?? null;
         this.isNight    = g.theme?.sky === 'night';
+        if (this.isNight) this.switchTrack(this.NIGHT_TRACK);
         this.flowers    = (g.flowers ?? []).map((f: any, i: number) => ({
           id:       i,
           type:     f.type as 'rosa' | 'girassol' | 'tulipa',
@@ -187,7 +222,10 @@ export class GardenComponent implements OnInit {
 
   closeShareModal() { this.showShareModal = false; }
 
-  toggleNight() { this.isNight = !this.isNight; }
+  toggleNight() {
+    this.isNight = !this.isNight;
+    this.switchTrack(this.isNight ? this.NIGHT_TRACK : this.DAY_TRACK);
+  }
 
   // ── PICKER ──
   togglePicker(e: Event) {

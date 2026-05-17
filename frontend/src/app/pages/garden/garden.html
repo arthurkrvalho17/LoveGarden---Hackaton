@@ -74,6 +74,12 @@
       <div class="flowers-count">
         {{ flowers.length === 0 ? 'Nenhuma flor' : flowers.length === 1 ? '1 flor' : flowers.length + ' flores' }}
       </div>
+      <!-- Botão música -->
+      <button class="music-btn"
+              (click)="toggleMusic(); $event.stopPropagation()"
+              [title]="musicMuted ? 'Ligar música' : 'Silenciar'">
+        {{ musicMuted ? '🔇' : '🎵' }}
+      </button>
       <!-- Botão modo noite -->
       <button class="night-btn"
               *ngIf="!isReadOnly"
