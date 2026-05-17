@@ -78,7 +78,9 @@ LoveGarden/
 ```
 
 ---
-
+## Como Acessar? 
+- Acesso o link: https://arthurkrvalho17.github.io/LoveGarden---Hackaton/#/
+  
 ## Rodando localmente
 
 ### Pré-requisitos
