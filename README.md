@@ -4,6 +4,8 @@ Uma homenagem interativa para o Dia das Mães. Plante flores virtuais com mensag
 
 **Acesse:** [arthurkrvalho17.github.io/LoveGarden---Hackaton](https://arthurkrvalho17.github.io/LoveGarden---Hackaton/)
 
+**Vídeo de Demo:** https://youtu.be/1jb0Zwd4FmQ
+
 ---
 
 ## Como usar
